@@ -15,4 +15,4 @@ __pycache__/
 *.pem
 ._*
 ext/
-rby1_sim/robot/generated/
+rby1_robocasa/robot/generated/

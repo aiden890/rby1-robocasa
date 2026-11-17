@@ -5,7 +5,7 @@ desk = counter, bookshelf = cabinet, book = boxed_food, pen = straw, pen holder 
 snack wrapper = bar, snacks = bar/donut/cupcake,
 trash bin / snack basket = basket, cola = can, hand-over spot = plate on the counter.
 """
-from rby1_sim.tasks.lab_assistant import FetchColaFromFridge, RefillSnackBasket, TidyDesk  # noqa: F401
+from rby1_robocasa.tasks.lab_assistant import FetchColaFromFridge, RefillSnackBasket, TidyDesk  # noqa: F401
 
 TASKS = {
     "tidy_desk": "TidyDesk",

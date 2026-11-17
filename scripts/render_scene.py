@@ -5,7 +5,7 @@ from pathlib import Path
 import imageio.v2 as imageio
 import numpy as np
 
-from rby1_sim.sim.envs import make, CAMERAS
+from rby1_robocasa.env.envs import make, CAMERAS
 
 ap = argparse.ArgumentParser()
 ap.add_argument("task")

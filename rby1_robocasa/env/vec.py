@@ -8,7 +8,7 @@
 """
 import functools
 
-from rby1_sim.sim.envs import make
+from rby1_robocasa.env.envs import make
 
 
 class SceneReuse:
@@ -27,7 +27,7 @@ class SceneReuse:
 
 
 def _build(task, seed, new_scene_every, kwargs):
-    import rby1_sim.register  # noqa: F401  (spawned workers start from a fresh interpreter)
+    import rby1_robocasa.register  # noqa: F401  (spawned workers start from a fresh interpreter)
 
     return SceneReuse(make(task, seed=seed, **kwargs), new_scene_every)
 

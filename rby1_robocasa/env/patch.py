@@ -10,7 +10,7 @@
 import robosuite.controllers as rc
 import robosuite.controllers.composite.composite_controller_factory as ccf
 
-from rby1_sim.robot import controller_config_path
+from rby1_robocasa.robot import controller_config_path
 
 _orig = ccf.load_composite_controller_config
 

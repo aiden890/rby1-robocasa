@@ -2,11 +2,11 @@
 import numpy as np
 import pytest
 
-import rby1_sim.register  # noqa: F401
+import rby1_robocasa.register  # noqa: F401
 import robosuite
 from robosuite.controllers import load_composite_controller_config
 
-from rby1_sim.robot import controller_config_path
+from rby1_robocasa.robot import controller_config_path
 
 
 @pytest.fixture(scope="module")

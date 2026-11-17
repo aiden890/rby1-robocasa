@@ -26,7 +26,7 @@ SOURCE = "rby1_v1.2.xml"
 
 # joint dynamics and torque limits (approximate; tune against the real robot)
 JOINT_DYN = {"torso": (1.0, 20.0), "arm": (0.1, 2.0), "head": (0.05, 1.0)}
-TORQUE = {"torso": 400.0, "arm_lo": 100.0, "arm_hi": 30.0, "head": 10.0}
+TORQUE = {"torso": 2000.0, "arm_lo": 150.0, "arm_hi": 40.0, "head": 20.0}
 
 # camera frame: MuJoCo cameras look along -z with +y up; this quat makes them look along +x, z up
 CAM_FWD_QUAT = "0.5 0.5 -0.5 -0.5"

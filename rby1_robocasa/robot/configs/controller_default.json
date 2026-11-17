@@ -48,7 +48,7 @@
         "orientation_limits": null,
         "uncouple_pos_ori": true,
         "input_type": "delta",
-        "input_ref_frame": "base",
+        "input_ref_frame": "world",
         "interpolation": null,
         "ramp_ratio": 0.2,
         "gripper": {
@@ -90,7 +90,7 @@
         "orientation_limits": null,
         "uncouple_pos_ori": true,
         "input_type": "delta",
-        "input_ref_frame": "base",
+        "input_ref_frame": "world",
         "interpolation": null,
         "ramp_ratio": 0.2,
         "gripper": {
@@ -105,7 +105,7 @@
       "input_type": "delta",
       "output_max": 0.03,
       "output_min": -0.03,
-      "kp": 1500,
+      "kp": 3000,
       "damping_ratio": 1,
       "velocity_limits": [
         -1,
@@ -113,7 +113,7 @@
       ],
       "kp_limits": [
         0,
-        3000
+        5000
       ],
       "interpolation": null,
       "ramp_ratio": 0.2
@@ -139,7 +139,7 @@
       "ramp_ratio": 0.2
     },
     "base": {
-      "type": "JOINT_VELOCITY",
+      "type": "JOINT_VELOCITY_LEGACY",
       "interpolation": "null"
     }
   }

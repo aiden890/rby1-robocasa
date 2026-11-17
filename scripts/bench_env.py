@@ -8,8 +8,8 @@ import time
 
 import numpy as np
 
-from rby1_sim.sim.envs import make
-from rby1_sim.sim.vec import make_vec
+from rby1_robocasa.env.envs import make
+from rby1_robocasa.env.vec import make_vec
 
 
 def main():

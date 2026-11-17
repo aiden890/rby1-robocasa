@@ -4,7 +4,7 @@ set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 GPU=""
 if [ "$1" = "--gpu" ]; then GPU="--gpus all"; shift; fi
-IMAGE=${RBY1_SIM_IMAGE:-rby1-sim2real:latest}
+IMAGE=${RBY1_ROBOCASA_IMAGE:-rby1-robocasa:latest}
 MUJOCO_GL_VALUE=${MUJOCO_GL:-$([ -n "$GPU" ] && echo egl || echo osmesa)}
 exec docker run --rm -i $GPU -u "$(id -u):$(id -g)" -e HOME=/tmp \
   -e MUJOCO_GL="$MUJOCO_GL_VALUE" -e PYOPENGL_PLATFORM="$MUJOCO_GL_VALUE" \

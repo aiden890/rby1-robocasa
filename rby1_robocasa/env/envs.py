@@ -1,5 +1,5 @@
 """Environment factory: RoboCasa's own create_env with robots="RBY1"."""
-import rby1_sim.register  # noqa: F401
+import rby1_robocasa.register  # noqa: F401
 from robocasa.utils.env_utils import create_env
 
 # robot cameras (robot0_ prefix added by robosuite); real roles: top = head, wrist = right wrist

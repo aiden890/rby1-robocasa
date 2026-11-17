@@ -1,5 +1,5 @@
 {
-  "title": "RB-Y1 Sim2Real",
+  "title": "RB-Y1 RoboCasa",
   "refresh_seconds": 15,
   "recording_note": "시뮬 롤아웃·실물 실행·재구성 영상을 구분해 등록합니다. 프레임 속도·시간 기준은 확인된 값만 적습니다.",
   "tabs": [

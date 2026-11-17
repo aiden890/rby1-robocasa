@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 
-from rby1_sim.sim.envs import make
-from rby1_sim.tasks import TASKS
+from rby1_robocasa.env.envs import make
+from rby1_robocasa.tasks import TASKS
 
 
 @pytest.mark.parametrize("key", sorted(TASKS))

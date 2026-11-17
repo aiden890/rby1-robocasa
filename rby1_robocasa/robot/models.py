@@ -5,7 +5,7 @@ from robosuite.models.grippers import GRIPPER_MAPPING
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.manipulators.manipulator_model import ManipulatorModel
 
-from rby1_sim.robot import (
+from rby1_robocasa.robot import (
     HEAD_READY,
     LEFT_ARM_READY,
     RIGHT_ARM_READY,

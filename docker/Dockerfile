@@ -1,4 +1,4 @@
-# RB-Y1 sim2real runtime: robosuite + RoboCasa dependencies only.
+# RB-Y1 RoboCasa runtime (sim server, tests): robosuite + RoboCasa dependencies only.
 # Sources (pinned in ext.lock) and ~10GB kitchen assets live in ./ext on the host
 # and are mounted at /ext; see scripts/setup_ext.sh.
 FROM python:3.11-slim-trixie

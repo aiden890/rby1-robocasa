@@ -19,14 +19,14 @@ lxml
 hidapi
 tianshou==0.4.10
 gymnasium
-# policy learning
+# lerobot is a RoboCasa install_requires; torch pinned to a version it accepts
 torch==2.6.0
 torchvision==0.21.0
 torchcodec==0.2.1  # 0.5 (lerobot default) needs torch 2.7 symbols
 lerobot==0.3.3
 # tests
 pytest
-# real-robot policy server protocol (robo-synapse RemotePolicy)
+# sim server transport (same as robo-synapse's policy server)
 pyzmq
 msgpack
 msgpack-numpy
