@@ -1,0 +1,5 @@
+ext/
+outputs/
+status-page/
+.git/
+**/generated/

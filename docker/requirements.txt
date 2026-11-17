@@ -1,0 +1,31 @@
+# robosuite 5ce6643 (master) install_requires
+qpsolvers[quadprog]>=4.3.1
+# robocasa 425684d install_requires
+numpy==2.2.5
+numba==0.61.2
+scipy==1.15.3
+mujoco==3.3.1
+pygame
+Pillow
+opencv-python-headless
+pyyaml
+pynput
+tqdm
+termcolor
+imageio
+imageio-ffmpeg
+h5py
+lxml
+hidapi
+tianshou==0.4.10
+gymnasium
+# policy learning
+torch==2.6.0
+torchvision==0.21.0
+lerobot==0.3.3
+# tests
+pytest
+# real-robot policy server protocol (robo-synapse RemotePolicy)
+pyzmq
+msgpack
+msgpack-numpy
