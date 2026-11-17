@@ -1,0 +1,19 @@
+[
+  {
+    "id": "sample-topic",
+    "title": "샘플 영상 주제",
+    "description": "템플릿 기능을 보여주는 샘플입니다. 실제 연구 결과가 아닙니다.",
+    "category": "샘플",
+    "model": "미등록",
+    "task": "미등록",
+    "environment": "미등록",
+    "date": "",
+    "tags": [
+      "샘플"
+    ],
+    "run_ids": [
+      "sample-run-1",
+      "sample-run-2"
+    ]
+  }
+]

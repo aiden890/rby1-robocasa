@@ -1,0 +1,16 @@
+# 데이터·산출물은 Git 밖에 둡니다
+outputs/
+datasets/
+checkpoints/
+*.hdf5
+*.mp4
+*.pt
+*.ckpt
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.key
+*.pem
+._*

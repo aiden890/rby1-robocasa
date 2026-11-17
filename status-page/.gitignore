@@ -1,0 +1,11 @@
+dist/
+.runtime/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.key
+*.pem
+project/media/*
+!project/media/.gitkeep

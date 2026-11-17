@@ -1,0 +1,30 @@
+[
+  {
+    "id": "sample-run-1",
+    "robot": "Sample 1",
+    "task": "미등록",
+    "status": "미등록",
+    "description": "실제 실행·지표·영상이 없는 빈 샘플 기록입니다.",
+    "steps": null,
+    "max_steps": null,
+    "fps": null,
+    "duration": null,
+    "cameras": [],
+    "video": "",
+    "poster": ""
+  },
+  {
+    "id": "sample-run-2",
+    "robot": "Sample 2",
+    "task": "미등록",
+    "status": "미등록",
+    "description": "실제 실행·지표·영상이 없는 빈 샘플 기록입니다.",
+    "steps": null,
+    "max_steps": null,
+    "fps": null,
+    "duration": null,
+    "cameras": [],
+    "video": "",
+    "poster": ""
+  }
+]

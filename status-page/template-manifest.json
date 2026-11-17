@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "files": {
+    "VERSION.json": "f2021bf875816cbe1110aaec470c3a5c89526106a627b966308d215c7df5f5be",
+    "scripts/build.py": "388374b07d8b5feffc0058c6910c2bcc2d92031ab9f92ca94d76c992137ebaa5",
+    "scripts/serve.py": "fd61d939c88fae2556d5e609a1c1158aa0eba9982df772d037902b579513313d",
+    "scripts/update_template.py": "037108d16f93a8438b179ed70d1d228668cedebe08f0eec11692107ab2a211f7",
+    "scripts/version_manifest.py": "281148382db1c0f244eaa78b7e205e8e4ba087c466fa1b589c100aa7e6dfd317",
+    "template/assets/board.js": "72a3df3e801b2ea620cef80b1c8f1efb3d8d01e369643d9e06718e0ac3181cd9",
+    "template/assets/site.css": "49876e8969e884f79bf71be7da40f48d768499255bd5bf27132a04b1ee3c3370",
+    "template/assets/theme.css": "1da3d52346c5f47a8a2dba30cbfa3a43038d9c1e02398eb21b8eb56a3ab6eca3",
+    "template/assets/theme.js": "d3d759fe729b6455336dd9861574b37e6b926dfbf25564f9d8a2d06ac1440218",
+    "template/assets/topic.js": "8a94c7ac03a5d1513cc482ec049ab16f973487607dc3b0c7b9baa708c2717773",
+    "template/assets/topics.js": "85e4deb9b399f1af270cfd631c5cd96a062f97f3a84653c1b42ebb982a8cb4b8",
+    "template/assets/videos.js": "34c98c366a79df6b0b0bdd3ee75a99e24f7d95d310d4d502f31eb1503457cdbd",
+    "template/index.html": "1a856ef9aada4e86e42f88d745aa52ce2d90df24791f3f67f0b1d8594caf1d51",
+    "template/style.css": "0838b18e12839357f91c7c35a178203e786bb9d59eb094e4c93d18dd3f24ceb3",
+    "template/topic.html": "13dcd2a3e33d0ef2f4b23b8e377e49a0e85b51f8918c02dc3f63ec8e63af372d",
+    "template/videos.html": "487be19c30e8a52718312e9112e5ad96de03420b3086cf1be6508ce3a46e8d03"
+  }
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} | 영상 주제</title>
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="style.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">본문으로 이동</a>
+<header>
+  <nav class="nav">
+    <div class="brand">{{BRAND}}</div>
+    {{NAV}}
+  </nav>
+</header>
+<main id="content" class="wrap" aria-label="주제별 영상 페이지">
+<div class="board-heading"><a class="back-link" href="videos.html">← 게시판 목록</a><button id="delete-topic" class="delete-button">게시글 삭제</button></div>
+<span class="section-kicker">RESEARCH NOTE</span>
+<h1 id="topic-title">주제를 불러오는 중입니다.</h1>
+<p id="topic-description"></p>
+<div id="topic-meta" class="topic-meta"></div>
+<div id="topic-tags" class="tags"></div>
+<p class="dim">{{RECORDING_NOTE}}</p>
+<div class="card filters"><label>로봇 <select id="detail-robot"><option value="">전체</option></select></label><label>결과 <select id="detail-status"><option value="">전체</option><option>진행 중</option><option>성공</option><option>미성공</option><option>오류</option></select></label></div>
+<p id="detail-count" class="dim" aria-live="polite"></p>
+<div id="video-list" class="topic-videos"></div>
+<p id="notice" class="board-notice" role="status"></p>
+<script src="assets/board.js"></script>
+<script src="assets/topics.js"></script>
+<script src="assets/topic.js"></script>
+</main>
+</body>
+</html>

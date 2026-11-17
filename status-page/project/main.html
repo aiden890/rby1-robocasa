@@ -1,0 +1,45 @@
+<h1>RB-Y1 Sim2Real</h1>
+<p class="dim">연구실 비서 태스크 3종을 시뮬레이션(RoboCasa/robosuite)에서 학습해 RB-Y1 실물로 옮깁니다. 마지막 갱신 261117.</p>
+
+<div class="card">
+  <h2>현재 상태</h2>
+  <p><span class="badge b-ok">완료</span> 261117 저장소·진행상황 페이지 생성</p>
+  <p><span class="badge b-wait">다음</span> 1단계 환경: RB-Y1 MJCF를 robosuite 로봇으로 등록하고 RoboCasa 부엌에 불러오기</p>
+</div>
+
+<div class="card">
+  <h2>구현 방법론</h2>
+  <p>명령을 하위 작업으로 분해하고, 부위별 모듈이 나눠 수행합니다.</p>
+  <table>
+    <tr><th>부위</th><th>역할</th><th>방법</th></tr>
+    <tr><td>베이스</td><td>작업 위치까지 이동</td><td>연구실 지도·장소·물체 위치를 미리 등록</td></tr>
+    <tr><td>몸통</td><td>작업 자세 조정</td><td>팔이 작업하기 쉬운 높이·각도로 상체 조정</td></tr>
+    <tr><td>팔</td><td>조작 스킬</td><td>잡기부터 시작. 학습 정책 vs CaP 비교 후 결정</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>단계</h2>
+  <table>
+    <tr><th>#</th><th>단계</th><th>완료 기준</th><th>상태</th></tr>
+    <tr><td>1</td><td>환경</td><td>Docker 이미지에서 RB-Y1이 RoboCasa 부엌에 올라가고 팔·몸통·베이스가 움직임</td><td><span class="badge b-wait">대기</span></td></tr>
+    <tr><td>2</td><td>기본 태스크</td><td><code>OpenFridge</code>·<code>PickPlace</code>를 RB-Y1으로 실행</td><td><span class="badge b-wait">대기</span></td></tr>
+    <tr><td>3</td><td>연구실 장면</td><td>책상·책꽂이·간식 바구니 물체·장면 추가</td><td><span class="badge b-wait">대기</span></td></tr>
+    <tr><td>4</td><td>데이터</td><td>시뮬 텔레옵 시연 수집, 실물 기록과 같은 행동 형식</td><td><span class="badge b-wait">대기</span></td></tr>
+    <tr><td>5</td><td>학습</td><td>학습 정책 vs CaP 비교 결과</td><td><span class="badge b-wait">대기</span></td></tr>
+    <tr><td>6</td><td>실물 이전</td><td>robo-synapse로 실행, 시뮬과 성공률 비교</td><td><span class="badge b-wait">대기</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>결과</h2>
+  <p class="dim">아직 실행 결과가 없습니다. 결과는 태스크·에피소드 수·성공률·확인 시각·commit을 함께 적습니다.</p>
+</div>
+
+<div class="card">
+  <h2>기록</h2>
+  <table>
+    <tr><th>날짜</th><th>내용</th><th>근거</th></tr>
+    <tr><td>261117</td><td>저장소·페이지 생성, RoboCasa 참고 태스크 조사</td><td><code>docs/decisions.md</code>, <code>tasks/README.md</code></td></tr>
+  </table>
+</div>

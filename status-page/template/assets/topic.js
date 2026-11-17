@@ -1,0 +1,34 @@
+"use strict";
+const element=id=>document.getElementById(id),cards=new Map();let topic;
+function progress(row){
+ const metrics=[];
+ if(typeof row.steps==="number")metrics.push(row.steps+" / "+(typeof row.max_steps==="number"?row.max_steps:"미등록")+"스텝");
+ if(typeof row.fps==="number")metrics.push(row.fps+"fps");
+ if(typeof row.duration==="number")metrics.push("기록 "+row.duration.toFixed(2)+"초");
+ return row.status+" · "+(metrics.join(" · ")||"기록 지표 미등록");
+}
+function render(){
+ if(!topic)return;
+ cards.forEach(card=>{card.hidden=true;});
+ const visible=topic.records.filter(row=>["robot","status"].every(key=>!element("detail-"+key).value||row[key]===element("detail-"+key).value));
+ topic.records.forEach((row,index)=>{
+  let card=cards.get(row.id);
+  if(!card){
+   card=TopicLibrary.node("article",undefined,"card video-entry");const heading=TopicLibrary.node("div",undefined,"board-heading");heading.append(TopicLibrary.node("h2",(index+1)+". "+row.robot),Board.deleteButton("video",row.id,row.robot+" · "+row.id));card.append(heading);card.append(TopicLibrary.node("p",row.id,"run-id"));
+   card.append(TopicLibrary.node("p",row.description||"샘플/기록 설명 미등록","entry-description"));
+   card.append(TopicLibrary.node("p",undefined,"entry-progress"));card.append(TopicLibrary.node("div",undefined,"media-slot"));card.append(TopicLibrary.node("p",row.cameras.map(c=>c.replace("robot0_","")).join(" → "),"vsub"));cards.set(row.id,card);element("video-list").append(card);
+  }
+  card.hidden=!visible.includes(row);card.querySelector(".entry-progress").textContent=progress(row);
+  const slot=card.querySelector(".media-slot");
+  if(row.video&&!slot.querySelector("video")){slot.replaceChildren();const video=document.createElement("video");video.controls=true;video.playsInline=true;video.preload="metadata";video.src=row.video;video.poster=row.poster;video.setAttribute("aria-label",row.robot+" "+row.id+" 영상");const link=TopicLibrary.node("a","원본 MP4 열기","download-link");link.href=row.video;slot.append(video,link);}
+  else if(!row.video&&!slot.firstChild)slot.append(TopicLibrary.node("div",row.status==="오류"?"실행 오류로 게시할 영상이 없습니다.":"아직 영상이 없습니다. 프로젝트의 기록 파일을 추가하세요.","media-pending"));
+ });
+ element("detail-count").textContent="관련 실행 "+visible.length+"개 · 재생 가능 영상 "+visible.filter(r=>r.video).length+"개";
+}
+async function refresh(){
+ try{const topics=await TopicLibrary.load(),id=new URLSearchParams(location.search).get("topic");topic=topics.find(t=>t.id===id);if(!topic){element("topic-title").textContent="삭제되었거나 존재하지 않는 게시글입니다.";element("topic-description").textContent="게시판의 휴지통에서 복원할 수 있습니다.";element("delete-topic").disabled=true;element("video-list").replaceChildren();return;}
+ document.title=(window.PAGE_TITLE||"Research Page")+" | "+topic.title;element("topic-title").textContent=topic.title;element("topic-description").textContent=topic.description;element("topic-meta").textContent=[topic.category,topic.task,topic.model,topic.environment,topic.date].filter(Boolean).join(" · ");element("topic-tags").replaceChildren(...topic.tags.map(tag=>TopicLibrary.node("span",tag,"tag")));TopicLibrary.options(element("detail-robot"),topic.records.map(row=>row.robot));render();}
+ catch{element("detail-count").textContent="목록 갱신 실패. 기존 영상은 계속 재생할 수 있습니다.";}
+}
+element("delete-topic").addEventListener("click",async()=>{if(!topic)return;try{await Board.change("delete","topic",topic.id,topic.title);location.href="videos.html?deleted=1";}catch{Board.notice("삭제하지 못했습니다. 다시 시도해 주세요.");}});window.addEventListener("boardchanged",refresh);
+["detail-robot","detail-status"].forEach(id=>element(id).addEventListener("input",render));refresh();setInterval(refresh,window.PAGE_REFRESH_MS||15000);
