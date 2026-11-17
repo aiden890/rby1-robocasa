@@ -41,7 +41,7 @@ git clone https://github.com/aiden890/rby1-robocasa && cd rby1-robocasa
 sh scripts/setup_ext.sh --assets                              # ext/ 소스 고정 + 에셋 ~23 GB
 docker build -t rby1-robocasa:latest -f docker/Dockerfile .
 scripts/sim_server.sh start                                    # 기본: 이 서버의 tailnet IP:5590
-scripts/run.sh --gpu python -m pytest -q tests/                # 13개
+scripts/run.sh --gpu python -m pytest -q tests/                # 14개 (시뮬 서버와 GPU를 같이 쓰면 렌더 버퍼 오류: 서버를 잠시 내리고 실행)
 ```
 클라이언트(예: 제어 PC의 robo-synapse): `pip install -e <경로>` 후 `SimClient("tcp://<서버 IP>:5590")` 또는 환경 변수 `RBY1_ROBOCASA_URL`.
 
@@ -63,6 +63,10 @@ scripts/run.sh --gpu python -m pytest -q tests/                # 13개
 ## 알려진 점
 - numba JIT가 이 이미지에서 segfault → `setup_ext.sh`가 robosuite `ENABLE_NUMBA=False`
 - 바퀴 충돌 메시 제거(베이스는 슬라이드 관절 구동, 있으면 RoboCasa 배치 검사가 로봇을 부엌 밖으로 밀어냄)
-- 팔 OSC는 world 프레임으로 제어하고 서버가 `link_torso_5` 명령을 변환(몸통 프레임 기준이면 흔들림이 되먹임됨)
+- 팔 OSC 기준 프레임은 `link_torso_5`(world로 두면 RoboCasa 리셋 중 베이스 순간이동 때 목표가 남아 팔이 끌려감)
 - 관절 토크 한계·감쇠는 근사값(몸통 2000 Nm 등), 실물과 맞추기 전
 - 관절 궤적 명령은 목표 관절의 손끝 자세로 직교 이동(관절 정확 추종 아님)
+- 손끝 기준점(`grip_site`)은 실제 손가락 끝(링크6 -0.258 m): robo-synapse Skills가 이 점으로 집기 깊이·바닥을 계산
+- 시작 팔 자세는 가슴 앞(손끝 앞 0.43 m, 몸통 아래 0.18 m), 모든 관절이 한계에서 0.25 rad 이상 안쪽. RoboCasa는 PandaOmron 기준으로 픽스처 바로 앞에 로봇을 놓아, 더 뻗은 손은 조리대·냉장고 문 안에서 시작함
+- 팔 이동 실패 메시지에 이유 포함(관절 한계, 닿은 물체·픽스처)
+- 클라이언트 `SimArm`은 기본으로 실물 RB-Y1 facade 규약(손목 = 손끝 0.074 m 뒤, 손가락 -z)을 보고

@@ -87,19 +87,16 @@ class SimCore:
         return np.array([sim.data.qpos[sim.model.get_joint_qpos_addr(j)] for j in joints])
 
     def step(self, n=1, arm_cmd=None, base=None):
-        """arm_cmd: {arm: 6 OSC delta values in link_torso_5}. The arm controllers take world-frame
-        deltas (a torso-fixed controller frame let torso sway feed back into the arm goal and
-        oscillate), so the command is rotated into world here."""
+        """arm_cmd: {arm: 6 OSC delta values in link_torso_5}, the arm controllers' own frame
+        (the `{arm}_center` sites sit on link_torso_5). A world-frame controller goal is left
+        behind when RoboCasa teleports the base during reset and drags the arm after it."""
         e = self.env
         split = self.robot.composite_controller._action_split_indexes
         for _ in range(int(n)):
             a = np.zeros(e.action_dim)
-            if arm_cmd:
-                _, TR = self.torso5()
             for arm, cmd in (arm_cmd or {}).items():
                 s, t = split[arm]
-                cmd = np.asarray(cmd, float)
-                a[s:t] = np.clip(np.concatenate([TR @ cmd[:3], TR @ cmd[3:6]]), -1, 1)
+                a[s:t] = np.clip(cmd, -1, 1)
             for arm in ARMS:
                 a[split[f"{arm}_gripper"][0]] = self.grip[arm]
             for part, target, scale in (("torso", self.torso_target, TORSO_SCALE),

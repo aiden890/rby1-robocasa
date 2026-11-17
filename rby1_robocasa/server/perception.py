@@ -36,6 +36,8 @@ class PerceptionPart:
         env = self.core.env
         _, TR = self.core.torso5()
         held = {a: self.gripper.held_object(a) for a in ("right", "left")}
+        # sampled category per object ("frosted_food" -> "can"), from RoboCasa's object configs
+        cats = {c["name"]: (c.get("info") or {}).get("cat") for c in (getattr(env, "object_cfgs", None) or [])}
         out = []
         for name, obj in env.objects.items():
             bid = env.obj_body_id[name]
@@ -45,7 +47,7 @@ class PerceptionPart:
             Rt, size = TR.T @ R, np.array(obj.size)
             horiz = sorted([(size[i], Rt[:, i]) for i in range(3) if abs(Rt[2, i]) < 0.7], key=lambda t: -t[0])
             out.append({
-                "name": name, "category": getattr(obj, "category", None) or name,
+                "name": name, "category": cats.get(name) or name,
                 "center": ((lo + hi) / 2).tolist(), "top_z": float(hi[2]), "bottom_z": float(lo[2]),
                 "size": [float(s) for s, _ in horiz[:2]] or [float(hi[0] - lo[0]), float(hi[1] - lo[1])],
                 "yaw": float(np.arctan2(horiz[0][1][1], horiz[0][1][0])) if horiz else 0.0,

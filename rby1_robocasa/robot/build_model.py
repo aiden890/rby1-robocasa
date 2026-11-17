@@ -202,10 +202,12 @@ def build(sdk_dir=SDK_DIR, out_dir=OUT_DIR):
     # finger pads: small boxes at the inner fingertip faces, used for grasp checks
     for fb, sgn in (("finger1", 1), ("finger2", 1)):
         fbody = next(b for b in holder.iter("body") if b.get("name") == fb)
-        ET.SubElement(fbody, "geom", {"name": f"{fb}_pad", "type": "box", "size": "0.004 0.012 0.012", "pos": f"{-0.006*sgn} 0 -0.035",
+        ET.SubElement(fbody, "geom", {"name": f"{fb}_pad", "type": "box", "size": "0.004 0.012 0.012", "pos": f"{-0.006*sgn} 0 -0.048",
                                        "group": "0", "contype": "1", "conaffinity": "1", "friction": "2 0.05 0.0001", "condim": "4", "solref": "0.01 1", "rgba": "0.2 0.2 0.2 1"})
-    # eef frame at the fingertip centre, z pointing along the approach direction (-z of link 6)
-    eef = ET.SubElement(holder, "body", {"name": "eef", "pos": "0 0 -0.235", "quat": "0 1 0 0"})
+    # eef frame at the fingertips (the finger meshes end at -0.2606 m on link 6; 2 mm above), z along
+    # the approach direction (-z of link 6). robo-synapse's Skills treat this point as the fingertip
+    # (grasp depth, desk floor), so it must be the real tip, not the finger middle.
+    eef = ET.SubElement(holder, "body", {"name": "eef", "pos": "0 0 -0.258", "quat": "0 1 0 0"})
     ET.SubElement(eef, "site", {"name": "grip_site", "pos": "0 0 0", "size": "0.01 0.01 0.01", "rgba": "1 0 0 0.5", "type": "sphere", "group": "1"})
     ET.SubElement(eef, "site", {"name": "grip_site_cylinder", "pos": "0 0 0", "size": "0.005 10", "rgba": "0 1 0 0.3", "type": "cylinder", "group": "1"})
     for ax, pos, quat, rgba in (("x", "0.1 0 0", "0.707105 0 0.707108 0", "1 0 0 0"), ("y", "0 0.1 0", "0.707105 0.707108 0 0", "0 1 0 0"), ("z", "0 0 0.1", "1 0 0 0", "0 0 1 0")):

@@ -3,15 +3,54 @@
 Duck-typed: nothing here imports robo-synapse. Frames follow robo-synapse's RB-Y1 arm facade:
 link_torso_5, quaternion (x, y, z, w), metres.
 """
+import numpy as np
+
 from rby1_robocasa_client.client import SimCallError
+
+# half a turn about x: the sim's fingertip frame has z along the approach, the RB-Y1 facade's
+# ee frame has the fingers along -z (x, the jaw axis, is shared)
+_RX180 = np.diag([1.0, -1.0, -1.0])
+
+
+def _quat_to_mat(q):
+    x, y, z, w = (float(v) for v in q)
+    return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                     [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                     [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
+def _mat_to_quat(R):
+    t = np.trace(R)
+    if t > 0:
+        s = np.sqrt(t + 1.0) * 2
+        q = [(R[2, 1] - R[1, 2]) / s, (R[0, 2] - R[2, 0]) / s, (R[1, 0] - R[0, 1]) / s, 0.25 * s]
+    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+        s = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2
+        q = [0.25 * s, (R[0, 1] + R[1, 0]) / s, (R[0, 2] + R[2, 0]) / s, (R[2, 1] - R[1, 2]) / s]
+    elif R[1, 1] > R[2, 2]:
+        s = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2
+        q = [(R[0, 1] + R[1, 0]) / s, 0.25 * s, (R[1, 2] + R[2, 1]) / s, (R[0, 2] - R[2, 0]) / s]
+    else:
+        s = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2
+        q = [(R[0, 2] + R[2, 0]) / s, (R[1, 2] + R[2, 1]) / s, 0.25 * s, (R[1, 0] - R[0, 1]) / s]
+    q = np.array(q)
+    return tuple(float(v) for v in (q if q[3] >= 0 else -q))
 
 
 class SimArm:
     """Arm: joint_names, joint_positions, send_joint_trajectory, ee_pose, move_to_pose,
-    external_wrench, tare_wrench. `last_refusal` explains the last failed move."""
+    external_wrench, tare_wrench. `last_refusal` explains the last failed move.
 
-    def __init__(self, sim, side):
+    convention="rby1" (default) reports the pose robo-synapse's real RB-Y1 facade reports:
+    the wrist point `tool_offset_m` behind the fingertip, fingers along -z (its Skills profile
+    then uses cap.skills.tcp_offset_m = -tool_offset_m). convention="tip" passes the sim's
+    fingertip frame (z along the approach) through unchanged."""
+
+    def __init__(self, sim, side, *, convention="rby1", tool_offset_m=0.074):
+        if convention not in ("rby1", "tip"):
+            raise ValueError("convention must be 'rby1' or 'tip'")
         self.sim, self.side = sim, side
+        self.convention, self.tool_offset_m = convention, float(tool_offset_m)
         self.last_refusal = ""
         self._names = None
 
@@ -27,13 +66,30 @@ class SimArm:
     def send_joint_trajectory(self, targets, *, duration_s=None):
         return self._ok(self.sim.arm.send_joint_trajectory(self.side, dict(targets), duration_s))
 
+    def _tip_to_ee(self, p, q):
+        if self.convention == "tip":
+            return tuple(p), tuple(q)
+        R_tip = _quat_to_mat(q)
+        approach = R_tip[:, 2]
+        return tuple(np.asarray(p) - self.tool_offset_m * approach), _mat_to_quat(R_tip @ _RX180)
+
+    def _ee_to_tip(self, p, q):
+        if self.convention == "tip":
+            return list(p), (None if q is None else list(q))
+        R_ee = _quat_to_mat(q)
+        approach = -R_ee[:, 2]
+        return list(np.asarray(p, float) + self.tool_offset_m * approach), list(_mat_to_quat(R_ee @ _RX180))
+
     def ee_pose(self):
         p = self.sim.arm.ee_pose(self.side)
-        return {"position": tuple(p["position"]), "orientation": tuple(p["orientation"])}
+        pos, quat = self._tip_to_ee(p["position"], p["orientation"])
+        return {"position": pos, "orientation": quat}
 
     def move_to_pose(self, position, *, orientation=None, cartesian=False, pose_floor=False):
-        return self._ok(self.sim.arm.move_to_pose(self.side, list(position),
-                                                  None if orientation is None else list(orientation), cartesian))
+        if orientation is None:
+            orientation = self.ee_pose()["orientation"]   # keep the present hand orientation
+        tip, quat = self._ee_to_tip(position, orientation)
+        return self._ok(self.sim.arm.move_to_pose(self.side, tip, quat, cartesian))
 
     def external_wrench(self):
         return tuple(self.sim.arm.external_wrench(self.side))
