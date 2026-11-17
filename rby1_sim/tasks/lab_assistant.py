@@ -1,188 +1,105 @@
-"""Three lab-assistant demo tasks (261117 scenario deck) as RoboCasa Kitchen environments.
+"""Three lab-assistant demo tasks (261117 scenario deck) as thin subclasses of RoboCasa tasks.
 
-Every task exposes `subtasks`: the ordered decomposition used by the skill layer
-(base: navigate, torso: posture, arm: pick/place/open), so scripted demos, CaP plans and
-learned skills share one structure.
+Only object groups, language and the extra objects change; scene setup, placement and the
+base success checks come from the RoboCasa parents.
 """
-import numpy as np
-
-from robocasa.environments.kitchen.kitchen import Kitchen, FixtureType
+from robocasa.environments.kitchen.composite.clearing_table.food_cleanup import FoodCleanup
+from robocasa.environments.kitchen.composite.defrosting_food.move_to_counter import MoveToCounter
+from robocasa.environments.kitchen.composite.snack_preparation.make_fruit_bowl import MakeFruitBowl
 import robocasa.utils.object_utils as OU
 
-
-class _LabTask(Kitchen):
-    """Common helpers. Subclasses define `subtasks()` and `_check_success()`."""
-
-    def subtasks(self):
-        raise NotImplementedError
-
-    def _all_far(self, names, th=0.15):
-        return all(OU.gripper_obj_far(self, obj_name=n, th=th) for n in names)
-
-    def _in(self, obj, receptacle):
-        return OU.check_obj_in_receptacle(self, obj, receptacle)
+# graspable snack-like categories (RoboCasa marks chips bags and chocolate as not graspable)
+SNACKS = ("bar", "donut", "cupcake")  # candy is aigen-only (not in the default registries)
 
 
-class TidyDesk(_LabTask):
-    """"책상 좀 치워줘": pen into the pen holder, book onto the shelf, snack bag into the bin.
-
-    desk = dining counter, pen = straw, pen holder = mug, book = boxed_food,
-    bookshelf = cabinet next to the desk (door opened at reset), trash bin = basket.
-    """
-
-    EXCLUDE_LAYOUTS = Kitchen.DINING_COUNTER_EXCLUDED_LAYOUTS
+class TidyDesk(FoodCleanup):
+    """"책상 좀 치워줘" — FoodCleanup (counter items into the cabinet, then close it) with
+    book = boxed_food -> shelf (cabinet), plus pen (straw) -> pen holder (mug) and
+    snack bar wrapper (bar) -> bin (basket) on the same counter."""
 
     def _setup_kitchen_references(self):
         super()._setup_kitchen_references()
-        self.desk = self.register_fixture_ref("desk", dict(id=FixtureType.DINING_COUNTER))
-        self.shelf = self.register_fixture_ref("shelf", dict(id=FixtureType.CABINET_WITH_DOOR))
-        self.shelf_counter = self.register_fixture_ref("shelf_counter", dict(id=FixtureType.COUNTER, ref=self.shelf))
-        self.init_robot_base_ref = self.desk
+        self.num_food = 1  # the book
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
         ep_meta["lang"] = (
-            "Tidy the desk: put the pen in the pen holder, put the book on the shelf, "
-            "and throw the snack bag in the bin."
+            "Tidy the desk: put the pen in the pen holder, throw the snack bag in the bin, "
+            "and put the book on the shelf. Then close the shelf."
         )
         return ep_meta
 
-    def _setup_scene(self):
-        super()._setup_scene()
-        self.shelf.open_door(min=1.0, max=1.0, env=self)
-
     def _get_obj_cfgs(self):
-        desk = lambda pos, size=(0.35, 0.3): dict(fixture=self.desk, size=size, pos=pos)
-        return [
-            dict(name="pen", obj_groups="straw", graspable=True, placement=desk((-0.5, -0.6))),
-            dict(name="pen_holder", obj_groups="mug", placement=desk((0.5, -0.6))),
-            dict(name="book", obj_groups="boxed_food", graspable=True, placement=desk((0.0, -0.6))),
-            dict(name="snack_bag", obj_groups="chips", graspable=True, placement=desk((-0.2, -0.3))),
-            dict(name="bin", obj_groups="basket", placement=desk((0.9, -0.3), (0.3, 0.4))),
+        cfgs = super()._get_obj_cfgs()
+        cfgs[0]["obj_groups"] = "boxed_food"
+        near = lambda pos, size=(0.30, 0.30): dict(
+            fixture=self.counter, sample_region_kwargs=dict(ref=self.cab), size=size, pos=pos)
+        cfgs += [
+            dict(name="pen", obj_groups="straw", graspable=True, placement=near(("ref", -1.0))),
+            dict(name="pen_holder", obj_groups="mug", placement=near((-1.0, -1.0))),
+            dict(name="snack_bag", obj_groups="bar", graspable=True, placement=near(("ref", -1.0))),
+            dict(name="bin", obj_groups="basket", placement=near((1.0, -1.0), (0.35, 0.35))),
         ]
-
-    def subtasks(self):
-        return [
-            ("navigate", "desk"), ("posture", "counter"),
-            ("pick", "pen"), ("place_in", "pen_holder"),
-            ("pick", "snack_bag"), ("place_in", "bin"),
-            ("pick", "book"), ("navigate", "shelf"), ("posture", "cabinet"), ("place_in_fixture", "shelf"),
-        ]
+        return cfgs
 
     def _check_success(self):
         return (
-            self._in("pen", "pen_holder")
-            and self._in("snack_bag", "bin")
-            and OU.obj_inside_of(self, "book", self.shelf)
-            and self._all_far(["pen", "snack_bag", "book"])
+            super()._check_success()
+            and OU.check_obj_in_receptacle(self, "pen", "pen_holder")
+            and OU.check_obj_in_receptacle(self, "snack_bag", "bin")
+            and OU.gripper_obj_far(self, "pen")
+            and OU.gripper_obj_far(self, "snack_bag")
         )
 
 
-class FetchColaFromFridge(_LabTask):
-    """"냉장고에서 콜라 하나 갖다줘": go to the fridge, open it, take the can, bring it to the sofa side.
+class FetchColaFromFridge(MoveToCounter):
+    """"냉장고에서 콜라 하나 갖다줘" — MoveToCounter (fridge item onto a plate on the counter)
+    with the item a can. The plate is the hand-over spot. fridge_open=False starts with the
+    door closed so opening is part of the task."""
 
-    sofa side = dining counter (start and goal). `fridge_open=True` starts with the door open
-    (for training the pick sub-skill separately from door opening).
-    """
-
-    EXCLUDE_LAYOUTS = Kitchen.DINING_COUNTER_EXCLUDED_LAYOUTS
-
-    def __init__(self, *args, fridge_open=False, **kwargs):
+    def __init__(self, *args, fridge_open=True, **kwargs):
         self.fridge_open = fridge_open
         super().__init__(*args, **kwargs)
 
-    def _setup_kitchen_references(self):
-        super()._setup_kitchen_references()
-        self.fridge = self.register_fixture_ref("fridge", dict(id=FixtureType.FRIDGE))
-        self.sofa_side = self.register_fixture_ref("sofa_side", dict(id=FixtureType.DINING_COUNTER))
-        self.init_robot_base_ref = self.sofa_side
-        if "refs" in self._ep_meta:
-            self.rack_index = self._ep_meta["refs"]["rack_index"]
-        else:
-            self.rack_index = -1 if self.rng.random() < 0.5 else -2
-
-    def get_ep_meta(self):
-        ep_meta = super().get_ep_meta()
-        ep_meta["lang"] = "Bring me a can of cola from the fridge."
-        ep_meta["refs"] = ep_meta.get("refs", {})
-        ep_meta["refs"]["rack_index"] = self.rack_index
-        return ep_meta
-
     def _setup_scene(self):
-        if self.fridge_open:
-            self.fridge.open_door(self, min=1.0, max=1.0)
-        else:
-            self.fridge.close_door(self)
-        super()._setup_scene()
-
-    def _get_obj_cfgs(self):
-        return [
-            dict(
-                name="cola", obj_groups="can", graspable=True, fridgable=True,
-                placement=dict(fixture=self.fridge, sample_region_kwargs=dict(compartment="fridge", reg_type="shelf", rack_index=self.rack_index),
-                               size=(0.30, 0.15), pos=(0.0, -1.0)),
-            ),
-            dict(
-                name="distr", obj_groups="yogurt", fridgable=True,
-                placement=dict(fixture=self.fridge, sample_region_kwargs=dict(compartment="fridge", reg_type="shelf"),
-                               size=(0.40, 0.15), pos=(0.0, -0.5)),
-            ),
-        ]
-
-    def subtasks(self):
-        return [
-            ("navigate", "fridge"), ("posture", "fridge"),
-            ("open_door", "fridge"), ("pick", "cola"),
-            ("navigate", "sofa_side"), ("posture", "counter"), ("place_on", "sofa_side"),
-        ]
-
-    def _check_success(self):
-        on_goal = OU.check_obj_fixture_contact(self, "cola", self.sofa_side)
-        return on_goal and OU.check_obj_upright(self, "cola") and self._all_far(["cola"])
-
-
-class RefillSnackBasket(_LabTask):
-    """"간식 바구니 채워줘": see which snacks the basket is missing and refill it from the snack box.
-
-    basket = basket on a counter holding one snack (object snack_in_basket_container); snack box = snacks on the
-    counter by a cabinet.
-    Success: two more snacks inside the basket.
-    """
-
-    def _setup_kitchen_references(self):
-        super()._setup_kitchen_references()
-        self.pantry = self.register_fixture_ref("pantry", dict(id=FixtureType.CABINET))
-        self.counter = self.register_fixture_ref("counter", dict(id=FixtureType.COUNTER, ref=self.pantry))
-        self.init_robot_base_ref = self.pantry
+        super()._setup_scene()  # opens the door
+        if not self.fridge_open:
+            self.fridge.close_door(env=self)
 
     def get_ep_meta(self):
         ep_meta = super().get_ep_meta()
-        ep_meta["lang"] = "Refill the snack basket with the snacks from the snack box."
+        ep_meta["lang"] = "Bring me a can of cola from the fridge and put it on the plate."
         return ep_meta
 
     def _get_obj_cfgs(self):
-        here = lambda pos, size=(0.3, 0.3): dict(fixture=self.counter, sample_region_kwargs=dict(ref=self.pantry), size=size, pos=pos)
-        return [
-            # the snack already in the basket; RoboCasa spawns the basket as "<name>_container"
-            dict(name="snack_in_basket", obj_groups=("chips", "chocolate", "candy"), graspable=True,
-                 placement=dict(fixture=self.counter, sample_region_kwargs=dict(ref=self.pantry), size=(0.35, 0.35),
-                                pos=(1.0, -0.8), try_to_place_in="basket")),
-            dict(name="snack1", obj_groups=("chips", "chocolate", "candy"), graspable=True, placement=here((-0.6, -0.8))),
-            dict(name="snack2", obj_groups=("chips", "chocolate", "candy"), graspable=True, placement=here((-0.2, -0.8))),
-        ]
+        cfgs = super()._get_obj_cfgs()
+        for c in cfgs:
+            if c["name"] == "frosted_food":  # parent's name kept so its success check applies
+                c["obj_groups"] = "can"
+            elif c["name"] == "distractor_obj":
+                c["obj_groups"] = ("yogurt", "boxed_drink")
+                c.pop("exclude_obj_groups", None)
+        return cfgs
 
-    BASKET = "snack_in_basket_container"
 
-    def subtasks(self):
-        return [
-            ("navigate", "counter"), ("posture", "counter"),
-            ("pick", "snack1"), ("place_in", self.BASKET),
-            ("pick", "snack2"), ("place_in", self.BASKET),
-        ]
+class RefillSnackBasket(MakeFruitBowl):
+    """"간식 바구니 채워줘" — MakeFruitBowl (cabinet items into a bowl, close the cabinet) with
+    bowl = basket and fruit = snacks; the cabinet is the snack box."""
 
-    def _check_success(self):
-        return (
-            self._in("snack1", self.BASKET)
-            and self._in("snack2", self.BASKET)
-            and self._all_far(["snack1", "snack2"])
+    def get_ep_meta(self):
+        ep_meta = super().get_ep_meta()
+        ep_meta["lang"] = (
+            "Open the cabinet, take the snacks out and put them in the snack basket. "
+            "Then close the cabinet."
         )
+        return ep_meta
+
+    def _get_obj_cfgs(self):
+        cfgs = super()._get_obj_cfgs()
+        for c in cfgs:
+            if c["name"] == "bowl":
+                c["obj_groups"] = "basket"
+                c.pop("graspable", None)  # baskets are not graspable in RoboCasa
+            elif c["name"] in ("fruit1", "fruit2"):
+                c["obj_groups"] = SNACKS
+        return cfgs
