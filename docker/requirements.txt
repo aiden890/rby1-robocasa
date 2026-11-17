@@ -22,6 +22,7 @@ gymnasium
 # policy learning
 torch==2.6.0
 torchvision==0.21.0
+torchcodec==0.2.1  # 0.5 (lerobot default) needs torch 2.7 symbols
 lerobot==0.3.3
 # tests
 pytest
