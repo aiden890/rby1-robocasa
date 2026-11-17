@@ -41,6 +41,16 @@ class SimCore:
                        image_hw=(8, 8), **(task_kwargs or {}))
             self.wrapped = SceneReuse(env, self.new_scene_every)
             self.task = task
+        if seed is not None:
+            # the env draws layout, style and placements from its own rng, seeded only when it was
+            # built: re-seed it (and force a new scene) so the same seed gives the same scene again
+            import random
+            import numpy as np
+
+            self.env.rng = np.random.default_rng(seed)
+            np.random.seed(seed)
+            random.seed(seed)
+            self.wrapped.n = 0
         self.wrapped.reset()
         self.grip = {a: -1.0 for a in ARMS}
         self.torso_target = self.qpos(self.part_joints("torso"))
